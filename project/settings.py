@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-#iuc*nm3ju5)a$*7--!3o-&mlh!c+&3&2fq8hoq!ax246o$3=c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['arca-ensina.vercel.app', 'localhost', '127.0.0.1']
 
 
 # Application definition
