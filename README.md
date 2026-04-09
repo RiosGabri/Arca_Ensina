@@ -1,2 +1,2 @@
-# Arca-_Ensina
+# Arca_Ensina
 Repositório para guardar o código da matéria Projetos 2
