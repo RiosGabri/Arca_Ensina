@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from Arca_Ensina.views import LogoutView, RegisterView, UserMeView
+from accounts.views import LogoutView, RegisterView, UserMeView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
