@@ -7,30 +7,36 @@ Referência técnica da infraestrutura implementada. Para setup e contribuição
 ## Visão geral
 
 ```
-project/                 Settings, URLs, configs globais
-├── settings.py          DRF, JWT, throttle, paginação
-├── urls.py              Todas as rotas /api/v1/...
-├── exceptions.py        Exception handler (JSON padronizado)
-└── serializers.py       BaseSerializer
+backend/
+├── project/                 Settings, URLs, configs globais
+│   ├── settings.py          DRF, JWT, throttle, paginação
+│   ├── urls.py              Todas as rotas /api/v1/...
+│   ├── exceptions.py        Exception handler (JSON padronizado)
+│   └── serializers.py       BaseSerializer
+├── apps/
+│   ├── accounts/            Auth e usuários
+│   │   ├── models.py        Custom User (AbstractUser + profile)
+│   │   ├── views.py         Register, UserMe, Logout
+│   │   ├── serializers.py   UserSerializer, RegisterSerializer
+│   │   └── permissions.py   IsDoctor, IsAdmin, IsResearcher
+│   └── audit/               Auditoria
+│       ├── models.py        AuditLog (UUID, action, resource, IP, payload)
+│       ├── mixins.py        AuditableMixin (auto-log CRUD)
+│       ├── utils.py         log_audit() para logging manual
+│       ├── filters.py       Filtros por action, user, resource, datas
+│       └── views.py         AuditLogViewSet (read-only, admin-only)
+├── manage.py
+├── requirements.txt
+└── Dockerfile
 
-accounts/                Auth e usuários
-├── models.py            Custom User (AbstractUser + profile)
-├── views.py             Register, UserMe, Logout
-├── serializers.py       UserSerializer, RegisterSerializer
-└── permissions.py       IsDoctor, IsAdmin, IsResearcher
+frontend/                    React + Vite + TypeScript
+├── src/pages/               Login, Register, Dashboard
+├── src/context/             AuthContext
+├── src/services/api.ts      Axios com interceptors JWT
+└── src/types/auth.ts        User, AuthTokens, ApiErrorResponse
 
-audit/                   Auditoria
-├── models.py            AuditLog (UUID, action, resource, IP, payload)
-├── mixins.py            AuditableMixin (auto-log CRUD)
-├── utils.py             log_audit() para logging manual
-├── filters.py           Filtros por action, user, resource, datas
-└── views.py             AuditLogViewSet (read-only, admin-only)
-
-frontend/                React + Vite + TypeScript
-├── src/pages/           Login, Register, Dashboard
-├── src/context/         AuthContext
-├── src/services/api.ts  Axios com interceptors JWT
-└── src/types/           Tipos TypeScript
+docker-compose.yml           Orquestra backend + frontend + PostgreSQL
+.github/workflows/           CI (lint + test + build) e deploy staging
 ```
 
 ---
@@ -62,7 +68,7 @@ class User(AbstractUser):
 | `IsResearcher` | `pesquisador` | Sim |
 
 ```python
-from accounts.permissions import IsDoctor
+from apps.accounts.permissions import IsDoctor
 
 class MeuViewSet(viewsets.ModelViewSet):
     permission_classes = [IsDoctor]
@@ -106,6 +112,26 @@ Códigos: `validation_error` (400), `authentication_error` (401), `permission_de
 
 **Regra:** sempre use exceções do DRF (`raise ValidationError(...)`) em vez de `return Response(..., status=400)`.
 
+### Consumindo erros no frontend
+
+O tipo `ApiErrorResponse` em `frontend/src/types/auth.ts` espelha este formato. Ao tratar erros de API:
+
+```typescript
+import type { ApiErrorResponse } from '../types/auth'
+
+catch (err) {
+  if (err instanceof AxiosError) {
+    const data = err.response?.data as ApiErrorResponse | undefined
+    // Mensagem legível:
+    const message = data?.error?.message
+    // Erros de validação por campo (400):
+    const fieldErrors = data?.error?.details
+  }
+}
+```
+
+**Nunca renderize `data.error` diretamente** — é um objeto `{code, message}`, não uma string. Use `data.error.message`.
+
 ### BaseSerializer
 
 Herdar de `project.serializers.BaseSerializer` adiciona `created_at`, `updated_at` e `version` como read-only. O model precisa definir esses campos:
@@ -134,7 +160,7 @@ class MeuSerializer(BaseSerializer):
 Adicione a qualquer `ModelViewSet` para logar automaticamente CREATE, UPDATE, DELETE, LIST e RETRIEVE:
 
 ```python
-from audit.mixins import AuditableMixin
+from apps.audit.mixins import AuditableMixin
 
 class ProtocolViewSet(AuditableMixin, ModelViewSet):
     audit_resource_type = 'protocol'   # obrigatório
@@ -149,7 +175,7 @@ class ProtocolViewSet(AuditableMixin, ModelViewSet):
 Para ações fora de viewsets:
 
 ```python
-from audit.utils import log_audit
+from apps.audit.utils import log_audit
 
 log_audit(
     user=request.user,
@@ -170,7 +196,7 @@ log_audit(
 ## Exemplo completo: novo domínio
 
 ```python
-# protocols/models.py
+# backend/apps/protocols/models.py
 from django.db import models
 
 class Protocol(models.Model):
@@ -180,7 +206,7 @@ class Protocol(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     version = models.PositiveIntegerField(default=1)
 
-# protocols/serializers.py
+# backend/apps/protocols/serializers.py
 from project.serializers import BaseSerializer
 from .models import Protocol
 
@@ -189,10 +215,10 @@ class ProtocolSerializer(BaseSerializer):
         model = Protocol
         fields = ['id', 'title', 'description', 'created_at', 'updated_at', 'version']
 
-# protocols/views.py
+# backend/apps/protocols/views.py
 from rest_framework.viewsets import ModelViewSet
-from accounts.permissions import IsDoctor
-from audit.mixins import AuditableMixin
+from apps.accounts.permissions import IsDoctor
+from apps.audit.mixins import AuditableMixin
 from .models import Protocol
 from .serializers import ProtocolSerializer
 
@@ -202,7 +228,7 @@ class ProtocolViewSet(AuditableMixin, ModelViewSet):
     serializer_class = ProtocolSerializer
     permission_classes = [IsDoctor]
 
-# protocols/urls.py
+# backend/apps/protocols/urls.py
 from rest_framework.routers import DefaultRouter
 from .views import ProtocolViewSet
 
@@ -210,8 +236,8 @@ router = DefaultRouter()
 router.register(r'protocols', ProtocolViewSet, basename='protocol')
 urlpatterns = router.urls
 
-# project/urls.py — adicionar:
-# path('api/<str:version>/', include('protocols.urls')),
+# backend/project/urls.py — adicionar:
+# path('api/<str:version>/', include('apps.protocols.urls')),
 ```
 
 ---
@@ -220,7 +246,7 @@ urlpatterns = router.urls
 
 ```python
 from rest_framework.test import APIClient
-from accounts.models import User
+from apps.accounts.models import User
 
 class MeuTesteBase(TestCase):
     def setUp(self):
@@ -254,4 +280,5 @@ O que testar em cada feature:
 - [ ] Permission class adequada (`IsDoctor`, `IsAdmin`, `IsResearcher`)
 - [ ] Erros via exceções DRF (não `Response` com status de erro)
 - [ ] URLs sob `api/<str:version>/`
+- [ ] Frontend usa `ApiErrorResponse` para tipar erros de API (nunca renderizar `error` como string)
 - [ ] Testes cobrindo auth, permissões, validação, auditoria
