@@ -53,4 +53,5 @@ class AuditableMixin:
         serializer = self.get_serializer(instance)
         self._log(request, "RETRIEVE", instance)
         from rest_framework.response import Response
+
         return Response(serializer.data)

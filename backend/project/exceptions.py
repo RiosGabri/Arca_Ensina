@@ -18,7 +18,7 @@ DEFAULT_MESSAGES = {
         "method_not_allowed",
         "The HTTP method is not allowed for this endpoint.",
     ),
-    status.HTTP_429_THROTTLED: (
+    status.HTTP_429_TOO_MANY_REQUESTS: (
         "throttled",
         "Request was throttled. Please try again later.",
     ),
@@ -48,9 +48,7 @@ def custom_exception_handler(exc, context):
             details = None
         else:
             code = "error"
-            message = str(
-                response.data.get("detail", "An error occurred.")
-            )
+            message = str(response.data.get("detail", "An error occurred."))
             details = None
 
         if isinstance(details, str):

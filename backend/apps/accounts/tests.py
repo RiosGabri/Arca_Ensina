@@ -107,14 +107,10 @@ class AuthEndpointTests(TestCase):
         access = login_resp.data["access"]
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
-        logout_resp = self.client.post(
-            "/api/v1/auth/logout/", {"refresh": refresh}
-        )
+        logout_resp = self.client.post("/api/v1/auth/logout/", {"refresh": refresh})
         self.assertEqual(logout_resp.status_code, 204)
 
-        refresh_resp = self.client.post(
-            "/api/v1/auth/refresh/", {"refresh": refresh}
-        )
+        refresh_resp = self.client.post("/api/v1/auth/refresh/", {"refresh": refresh})
         self.assertIn(refresh_resp.status_code, (400, 401))
 
     def test_logout_rejects_other_users_token(self):
@@ -135,9 +131,7 @@ class AuthEndpointTests(TestCase):
         self.client.credentials(
             HTTP_AUTHORIZATION=f"Bearer {login_resp.data['access']}"
         )
-        resp = self.client.post(
-            "/api/v1/auth/logout/", {"refresh": other_refresh}
-        )
+        resp = self.client.post("/api/v1/auth/logout/", {"refresh": other_refresh})
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(resp.data["error"]["code"], "permission_denied")
         self.assertEqual(
