@@ -14,6 +14,7 @@ from apps.accounts.views import LogoutView, RegisterView, UserMeView
 
 V = "api/<str:version>"
 
+
 def em_breve(_request):
     html = (
         "<html><head><title>Arca Ensina</title></head>"
@@ -29,10 +30,9 @@ def em_breve(_request):
     )
     return HttpResponse(html, content_type="text/html")
 
-urlpatterns = [
-    
-    path("", em_breve),
 
+urlpatterns = [
+    path("", em_breve),
     path("admin/", admin.site.urls),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
