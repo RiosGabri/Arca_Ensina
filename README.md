@@ -9,120 +9,122 @@
 
 ## Descrição
 
-Este projeto consiste no desenvolvimento de uma aplicação web multiplataforma, acessível por computadores, smartphones e tablets, com o objetivo de centralizar protocolos médicos e oferecer ferramentas de apoio à prática clínica.
+Aplicação web multiplataforma para centralizar protocolos médicos e oferecer ferramentas de apoio à prática clínica. Reúne conteúdos da equipe **ARCA Ensina** com funcionalidades que auxiliam na tomada de decisão e organização do fluxo de trabalho médico.
 
-A plataforma reúne conteúdos elaborados pela equipe **ARCA Ensina**, além de funcionalidades que auxiliam na tomada de decisão e na organização do fluxo de trabalho médico.
-
-O público-alvo principal são pediatras intensivistas recém-formados, buscando oferecer suporte prático, confiável e ágil em seu dia a dia.
+Público-alvo: pediatras intensivistas recém-formados.
 
 ---
 
-## Objetivos
+## Stack
 
-- Centralizar protocolos médicos  
-- Facilitar acesso rápido à informação  
-- Apoiar decisões clínicas  
-- Melhorar eficiência no trabalho médico  
-
----
-
-## Processo de Desenvolvimento
-
-### 🔍 Pesquisa e Análise
-- Levantamento de aplicações similares  
-- Análise comparativa  
-
-### 👤 Persona
-- Definição do perfil do usuário  
-
-### 🗺️ Jornada do Usuário
-- Mapeamento de interações  
-
-### 📊 Coleta de Dados
-- Aplicação de formulário  
-- Análise dos resultados  
-
-### 💡 Ideação
-- Divisão em 3 equipes  
-- Uso de diferentes abordagens  
-
-### 📌 Priorização (MoSCoW)
-- **Must have** – essenciais  
-- **Should have** – importantes  
-- **Could have** – desejáveis  
-- **Won’t have** – fora do escopo  
-
-### 🧩 Planejamento Ágil
-- Histórias de usuário  
-- Organização em 3 épicos  
-
-### 📈 Gestão
-- Uso do Jira  
-- Apresentação de Status Report  
+- **Backend:** Django 6 + Django REST Framework + SimpleJWT (SQLite em dev, PostgreSQL em Docker/prod)
+- **Frontend:** React 18 + TypeScript + Vite
+- **CI/CD:** GitHub Actions + Docker Compose
 
 ---
 
-## Arquitetura
-[ React (Frontend) ] → [ REST API ] → [ Django (Backend) ]
+## Quero rodar localmente
 
-### Backend
-- Django  
-- Regras de negócio  
-- Autenticação e dados  
+Veja o [**CONTRIBUTING.md**](./.github/CONTRIBUTING.md) para o guia completo.
 
-### API
-- REST  
-- JSON  
+### Docker (recomendado)
 
-### Frontend
-- React  
-- Interface e experiência do usuário  
+```bash
+cp .env.example .env
+docker compose up
+```
+
+Migrations rodam automaticamente na primeira inicialização.
+
+### Manual (dois terminais)
+
+```bash
+# Terminal 1 — backend
+cp .env.example .env              # obrigatório (SECRET_KEY, etc.)
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r backend/requirements.txt
+cd backend
+python manage.py migrate
+python manage.py runserver        # :8000
+
+# Terminal 2 — frontend
+cd frontend
+npm install
+npm run dev                       # :5173
+```
+
+Abra **http://localhost:5173** no navegador.
 
 ---
 
-## Tecnologias
+## Estrutura
 
-- Django  
-- Django REST Framework  
-- React  
-- Jira  
+```
+backend/
+  project/       ← configurações Django (settings, urls)
+  apps/
+    accounts/    ← autenticação (User, login, register, logout)
+    audit/       ← auditoria (AuditLog, AuditableMixin)
+frontend/        ← SPA React + Vite
+docs/            ← planejamento (stories, infra, roadmap)
+```
 
----
-
-## Público-Alvo
-
-- Pediatras intensivistas recém-formados  
-- Profissionais em início de carreira  
+> **Convenção:** cada domínio do produto vira um **app Django próprio** dentro de `backend/apps/`. Veja a seção _Adicionando um domínio novo_ no [CONTRIBUTING.md](./.github/CONTRIBUTING.md).
 
 ---
 
 ## Funcionalidades
 
-- Consulta de protocolos médicos  
+- Consulta de protocolos médicos
 - Calculadoras de medicamentos
-- Interface responsiva  
-- Organização de informações
+- Interface responsiva
 - Modo Offline
 - Bulário digital
 - Suporte à exportação de dados para pesquisa
 
 ---
 
-## Metodologia
+<details>
+<summary><strong>Status Report 1</strong></summary>
 
-- Desenvolvimento ágil  
-- Entregas incrementais  
-- Validação contínua  
+### Pesquisa e Análise
+- Levantamento de aplicações similares
+- Análise comparativa
 
----
+### Persona
+- Definição do perfil do usuário
 
-## Status do Projeto
+### Jornada do Usuário
+- Mapeamento de interações
 
-🚧 Em desenvolvimento  
+### Coleta de Dados
+- Aplicação de formulário
+- Análise dos resultados
+
+### Ideação
+- Divisão em 3 equipes
+- Uso de diferentes abordagens
+
+### Priorização (MoSCoW)
+- **Must have** – essenciais
+- **Should have** – importantes
+- **Could have** – desejáveis
+- **Won't have** – fora do escopo
+
+### Planejamento Ágil
+- Histórias de usuário
+- Organização em 3 épicos
+
+### Gestão
+- Uso do Jira
+- Apresentação de Status Report
+
+</details>
 
 ---
 
 ## 👨‍💻 Equipe
+
 ### Desenvolvedores
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
@@ -147,8 +149,8 @@ O público-alvo principal são pediatras intensivistas recém-formados, buscando
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-
 ### Designers
+
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
