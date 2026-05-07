@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from apps.accounts.permissions import IsAdmin, IsDoctor
+from apps.accounts.permissions import IsAdmin
 from apps.audit.mixins import AuditableMixin
 
 from .models import Protocol, ProtocolVersion
@@ -52,8 +52,6 @@ class ProtocolViewSet(AuditableMixin, ModelViewSet):
     def get_permissions(self):
         if self.action in ("create", "update", "partial_update", "destroy"):
             return [IsAuthenticated(), IsAdmin()]
-        if self.action in ("list", "retrieve"):
-            return [IsAuthenticated(), IsDoctor()]
         return [IsAuthenticated()]
 
     @action(detail=True, methods=["get"], url_path="versions")

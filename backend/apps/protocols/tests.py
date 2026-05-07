@@ -138,19 +138,25 @@ class ProtocolViewSetTest(TestCase):
             password="testpass123",
             profile="medico",
         )
+        self.researcher = User.objects.create_user(
+            username="researcher",
+            email="researcher@test.com",
+            password="testpass123",
+            profile="pesquisador",
+        )
         self.protocol = Protocol.objects.create(title="Protocolo ViewSet")
 
     def test_list_requires_authentication(self):
         response = self.client.get("/api/v1/protocols/")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_doctor_can_list(self):
-        self.client.force_authenticate(user=self.doctor)
+    def test_authenticated_can_list(self):
+        self.client.force_authenticate(user=self.researcher)
         response = self.client.get("/api/v1/protocols/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_doctor_can_retrieve(self):
-        self.client.force_authenticate(user=self.doctor)
+    def test_authenticated_can_retrieve(self):
+        self.client.force_authenticate(user=self.researcher)
         response = self.client.get(f"/api/v1/protocols/{self.protocol.pk}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -257,7 +263,7 @@ class ProtocolVersionViewSetTest(TestCase):
             is_current=False,
         )
         response = self.client.post(f"/api/v1/protocol-versions/{v2.pk}/set-current/")
-        self.assertEadultos e qual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         v2.refresh_from_db()
         self.version.refresh_from_db()
         self.assertTrue(v2.is_current)
