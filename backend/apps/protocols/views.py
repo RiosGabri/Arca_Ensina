@@ -136,11 +136,24 @@ class ProtocolVersionViewSet(AuditableMixin, ModelViewSet):
         version = self.get_object()
         serializer = ProtocolExecutionStartSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        client_uuid = serializer.validated_data.get("client_uuid")
+
+        if client_uuid:
+            existing = ProtocolExecution.objects.filter(
+                physician=request.user,
+                client_uuid=client_uuid,
+            ).first()
+            if existing:
+                return Response(
+                    ProtocolExecutionSerializer(existing).data,
+                    status=200,
+                )
 
         execution = ProtocolExecution.objects.create(
             version=version,
             physician=request.user,
             patient_name=serializer.validated_data["patient_name"],
+            client_uuid=client_uuid,
         )
         
         execution = ProtocolExecutionEngine().comecar(execution)

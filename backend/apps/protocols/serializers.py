@@ -174,6 +174,7 @@ class ProtocolExecutionSerializer(serializers.ModelSerializer):
             "version",
             "physician",
             "patient_name",
+            "client_uuid",
             "status",
             "current_step",
             "current_step_key",
@@ -194,6 +195,7 @@ class ProtocolExecutionStartSerializer(serializers.Serializer):
     """serializer para iniciar uma execução."""
 
     patient_name = serializers.CharField(max_length=255)
+    client_uuid = serializers.UUIDField(required=False)
 
 class ProtocolExecutionAnswerSerializer(serializers.Serializer):
     """serializer para submeter resposta de um passo"""

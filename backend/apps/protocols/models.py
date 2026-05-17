@@ -190,6 +190,12 @@ class ProtocolExecution(models.Model):
         verbose_name="Médico",
     )
     patient_name = models.CharField(max_length=255, verbose_name="Nome do paciente")
+    client_uuid = models.UUIDField(
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="UUID do cliente para idempotência",
+    )
     status = models.CharField(
         max_length=15,
         choices=Status.choices,
@@ -217,6 +223,13 @@ class ProtocolExecution(models.Model):
 
     class Meta:
         ordering = ["-started_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["physician", "client_uuid"],
+                condition=models.Q(client_uuid__isnull=False),
+                name="unique_protocol_execution_client_uuid_per_physician",
+            )
+        ]
         verbose_name = "Execução de Protocolo"
         verbose_name_plural = "Execuções de Protocolo"
 

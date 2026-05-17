@@ -3,6 +3,7 @@ from django.test import TestCase
 from .services import ProtocolExecutionEngine
 from rest_framework import status
 from rest_framework.test import APIClient
+from uuid import uuid4
 
 from .models import Protocol, ProtocolVersion, ProtocolStep, ProtocolExecution, ProtocolExecutionState
 
@@ -1548,6 +1549,35 @@ class JsonProtocolExecutionApiTest(TestCase):
         self.assertEqual(response.data["current_step_key"], "pergunta")
         self.assertEqual(response.data["current_step_data"]["id"], "pergunta")
         self.assertEqual(response.data["current_step_data"]["type"], "yes_no")
+
+    def test_start_with_same_client_uuid_is_idempotent(self):
+        self.client.force_authenticate(user=self.doctor)
+        client_uuid = str(uuid4())
+
+        first_response = self.client.post(
+            f"/api/v1/protocol-versions/{self.version.pk}/start/",
+            {
+                "patient_name": "Paciente API JSON",
+                "client_uuid": client_uuid,
+            },
+            format="json",
+        )
+        second_response = self.client.post(
+            f"/api/v1/protocol-versions/{self.version.pk}/start/",
+            {
+                "patient_name": "Paciente API JSON",
+                "client_uuid": client_uuid,
+            },
+            format="json",
+        )
+
+        self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(second_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(first_response.data["id"], second_response.data["id"])
+        self.assertEqual(
+            ProtocolExecution.objects.filter(client_uuid=client_uuid).count(),
+            1,
+        )
 
 
 class DengueFixtureJsonExecutionTest(TestCase):
