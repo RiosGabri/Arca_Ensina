@@ -286,6 +286,26 @@ class ProtocolVersionViewSetTest(TestCase):
         response = self.client.get("/api/v1/protocol-versions/?protocol_type=guiado")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_admin_cannot_patch_protocol_version(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            f"/api/v1/protocol-versions/{self.version.pk}/",
+            {"metadata": {"changed": True}},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_admin_cannot_delete_protocol_version(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.delete(
+            f"/api/v1/protocol-versions/{self.version.pk}/",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
     def test_exec_por_versao(self):
         self.client.raise_request_exception = True
         self.client.force_authenticate(user=self.doctor)

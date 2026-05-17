@@ -97,6 +97,7 @@ class ProtocolVersionViewSet(AuditableMixin, ModelViewSet):
     audit_resource_type = "protocol_version"
     permission_classes = [IsAuthenticated]
     serializer_class = ProtocolVersionSerializer
+    http_method_names = ["get", "post", "head", "options"]
     filterset_fields = ["protocol_type", "is_current", "protocol"]
     ordering_fields = ["version_number", "created_at"]
 
