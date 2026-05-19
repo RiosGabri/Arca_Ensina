@@ -45,7 +45,7 @@ class Paciente(models.Model):
     alergias = models.ManyToManyField(Alergia, blank=True)
 
     class Meta:
-        ordering = ['id'] 
+        ordering = ["id"]
 
     def __str__(self):
         return self.nome
