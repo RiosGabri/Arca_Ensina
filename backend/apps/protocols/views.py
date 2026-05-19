@@ -9,17 +9,18 @@ from rest_framework.viewsets import ModelViewSet
 from apps.accounts.permissions import IsAdmin
 from apps.audit.mixins import AuditableMixin
 
-from .services import ProtocolExecutionEngine
-from .models import Protocol, ProtocolVersion, ProtocolExecution
+from .engine.interpreter import GuidedProtocolInterpreter
+from .models import Protocol, ProtocolExecution, ProtocolVersion
 from .serializers import (
+    ProtocolExecutionAnswerSerializer,
+    ProtocolExecutionSerializer,
+    ProtocolExecutionStartSerializer,
     ProtocolListSerializer,
     ProtocolSerializer,
     ProtocolVersionCreateSerializer,
     ProtocolVersionSerializer,
-    ProtocolExecutionSerializer,
-    ProtocolExecutionStartSerializer,
-    ProtocolExecutionAnswerSerializer
 )
+from .services import ProtocolExecutionEngine
 
 
 class ProtocolFilter(django_filters.FilterSet):
@@ -90,6 +91,137 @@ class ProtocolViewSet(AuditableMixin, ModelViewSet):
             }
         )
 
+    def _get_active_execution(self, protocol, user):
+        return ProtocolExecution.objects.filter(
+            version__protocol=protocol,
+            physician=user,
+            status=ProtocolExecution.Status.EM_ANDAMENTO,
+        ).order_by("-started_at").first()
+
+    @action(detail=True, methods=["post"], url_path="execute")
+    def execute_start(self, request, pk=None, **kwargs):
+        protocol = self.get_object()
+        version = protocol.versions.filter(is_current=True).first()
+        if not version:
+            raise NotFound("Nenhuma versão atual para este protocolo.")
+
+        serializer = ProtocolExecutionStartSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        client_uuid = serializer.validated_data.get("client_uuid")
+        context = serializer.validated_data.get("context", {})
+
+        # Idempotência
+        if client_uuid:
+            existing = ProtocolExecution.objects.filter(
+                physician=request.user,
+                client_uuid=client_uuid,
+            ).first()
+            if existing:
+                return Response(
+                    ProtocolExecutionSerializer(existing).data,
+                    status=200,
+                )
+
+        execution = ProtocolExecution.objects.create(
+            version=version,
+            physician=request.user,
+            patient_name=serializer.validated_data["patient_name"],
+            client_uuid=client_uuid,
+        )
+
+        execution = ProtocolExecutionEngine().comecar(execution, context)
+
+        return Response(
+            ProtocolExecutionSerializer(execution).data,
+            status=201,
+        )
+
+    @action(detail=True, methods=["get"], url_path="execute/step")
+    def execute_step(self, request, pk=None, **kwargs):
+        protocol = self.get_object()
+        execution = self._get_active_execution(protocol, request.user)
+        if not execution:
+            raise NotFound("Nenhuma execução ativa para este protocolo.")
+
+        interpreter = GuidedProtocolInterpreter(execution.version.steps_data)
+        step = interpreter.get_step(execution.current_step_key) if execution.current_step_key else None
+
+        # Evaluate gates fresh
+        history = [
+            {"step_key": s.step_key, "values": s.values}
+            for s in execution.states.filter(step_key__isnull=False).order_by("answered_at")
+        ]
+        context = interpreter.build_context(history)
+        warnings = interpreter.evaluate_step_gates(execution.current_step_key, context) if execution.current_step_key else []
+
+        return Response({
+            "step": step,
+            "gate_warnings": warnings,
+        })
+
+    @action(detail=True, methods=["post"], url_path="execute/answer")
+    def execute_answer(self, request, pk=None, **kwargs):
+        protocol = self.get_object()
+        execution = self._get_active_execution(protocol, request.user)
+        if not execution:
+            raise NotFound("Nenhuma execução ativa para este protocolo.")
+
+        serializer = ProtocolExecutionAnswerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        ProtocolExecutionEngine().resposta_step_atual(
+            execution,
+            serializer.validated_data["values"],
+        )
+
+        execution.refresh_from_db()
+        return Response(ProtocolExecutionSerializer(execution).data)
+
+    @action(detail=True, methods=["post"], url_path="execute/next")
+    def execute_next(self, request, pk=None, **kwargs):
+        protocol = self.get_object()
+        execution = self._get_active_execution(protocol, request.user)
+        if not execution:
+            raise NotFound("Nenhuma execução ativa para este protocolo.")
+
+        engine = ProtocolExecutionEngine()
+        engine.avancar_step(execution)
+        execution.refresh_from_db()
+
+        # Evaluate gates for new step
+        interpreter = GuidedProtocolInterpreter(execution.version.steps_data)
+        step = interpreter.get_step(execution.current_step_key) if execution.current_step_key else None
+        history = [
+            {"step_key": s.step_key, "values": s.values}
+            for s in execution.states.filter(step_key__isnull=False).order_by("answered_at")
+        ]
+        context = interpreter.build_context(history)
+        warnings = interpreter.evaluate_step_gates(execution.current_step_key, context) if execution.current_step_key else []
+
+        if execution.status == execution.Status.CONCLUIDO:
+            return Response({
+                "step": None,
+                "gate_warnings": [],
+                "status": "concluido",
+            })
+
+        return Response({
+            "step": step,
+            "gate_warnings": warnings,
+        })
+
+    @action(detail=True, methods=["get"], url_path="execute/reminders")
+    def execute_reminders(self, request, pk=None, **kwargs):
+        protocol = self.get_object()
+        execution = self._get_active_execution(protocol, request.user)
+        if not execution:
+            raise NotFound("Nenhuma execução ativa para este protocolo.")
+
+        engine = ProtocolExecutionEngine()
+        reminders = engine.get_reminders(execution)
+
+        return Response({"reminders": reminders})
+
 
 class ProtocolVersionViewSet(AuditableMixin, ModelViewSet):
     """ViewSet para versões de protocolo."""
@@ -130,38 +262,7 @@ class ProtocolVersionViewSet(AuditableMixin, ModelViewSet):
         version.is_current = True
         version.save()
         return Response(ProtocolVersionSerializer(version).data)
-    
-    @action(detail=True, methods=["post"], url_path="start")
-    def executar(self, request, pk=None, **kwargs):
-        version = self.get_object()
-        serializer = ProtocolExecutionStartSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        client_uuid = serializer.validated_data.get("client_uuid")
 
-        if client_uuid:
-            existing = ProtocolExecution.objects.filter(
-                physician=request.user,
-                client_uuid=client_uuid,
-            ).first()
-            if existing:
-                return Response(
-                    ProtocolExecutionSerializer(existing).data,
-                    status=200,
-                )
-
-        execution = ProtocolExecution.objects.create(
-            version=version,
-            physician=request.user,
-            patient_name=serializer.validated_data["patient_name"],
-            client_uuid=client_uuid,
-        )
-        
-        execution = ProtocolExecutionEngine().comecar(execution)
-        
-        return Response(
-            ProtocolExecutionSerializer(execution).data,
-            status=201,
-        )
 
 class ProtocolExecutionViewSet(AuditableMixin, ModelViewSet):
     audit_resource_type = "protocol_execution"
@@ -176,20 +277,3 @@ class ProtocolExecutionViewSet(AuditableMixin, ModelViewSet):
             "current_step",
         ).filter(physician=self.request.user)
 
-    @action(detail=True, methods=["post"], url_path="answer")
-    def answer(self, request, pk=None, **kwargs):
-        execution= self.get_object()
-
-        serializer = ProtocolExecutionAnswerSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        ProtocolExecutionEngine().resposta_step_atual(
-            execution,
-            serializer.validated_data["values"],
-        )
-
-        execution.refresh_from_db()
-
-        return Response(ProtocolExecutionSerializer(execution).data)
-
-    
