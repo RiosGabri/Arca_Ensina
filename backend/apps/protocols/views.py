@@ -144,15 +144,27 @@ class ProtocolViewSet(AuditableMixin, ModelViewSet):
             raise NotFound("Nenhuma execução ativa para este protocolo.")
 
         interpreter = GuidedProtocolInterpreter(execution.version.steps_data)
-        step = interpreter.get_step(execution.current_step_key) if execution.current_step_key else None
+        step = (
+            interpreter.get_step(execution.current_step_key)
+            if execution.current_step_key
+            else None
+        )
 
         # Evaluate gates fresh
         history = [
             {"step_key": s.step_key, "values": s.values}
-            for s in execution.states.filter(step_key__isnull=False).order_by("answered_at")
+            for s in execution.states.filter(
+                step_key__isnull=False
+            ).order_by("answered_at")
         ]
         context = interpreter.build_context(history)
-        warnings = interpreter.evaluate_step_gates(execution.current_step_key, context) if execution.current_step_key else []
+        warnings = (
+            interpreter.evaluate_step_gates(
+                execution.current_step_key, context
+            )
+            if execution.current_step_key
+            else []
+        )
 
         return Response({
             "step": step,
@@ -190,13 +202,25 @@ class ProtocolViewSet(AuditableMixin, ModelViewSet):
 
         # Evaluate gates for new step
         interpreter = GuidedProtocolInterpreter(execution.version.steps_data)
-        step = interpreter.get_step(execution.current_step_key) if execution.current_step_key else None
+        step = (
+            interpreter.get_step(execution.current_step_key)
+            if execution.current_step_key
+            else None
+        )
         history = [
             {"step_key": s.step_key, "values": s.values}
-            for s in execution.states.filter(step_key__isnull=False).order_by("answered_at")
+            for s in execution.states.filter(
+                step_key__isnull=False
+            ).order_by("answered_at")
         ]
         context = interpreter.build_context(history)
-        warnings = interpreter.evaluate_step_gates(execution.current_step_key, context) if execution.current_step_key else []
+        warnings = (
+            interpreter.evaluate_step_gates(
+                execution.current_step_key, context
+            )
+            if execution.current_step_key
+            else []
+        )
 
         if execution.status == execution.Status.CONCLUIDO:
             return Response({

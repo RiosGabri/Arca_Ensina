@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import Protocol, ProtocolVersion
 
+
 class ProtocolVersionInline(admin.TabularInline):
     model = ProtocolVersion
     extra = 0

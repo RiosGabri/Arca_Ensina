@@ -1,11 +1,18 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from .services import ProtocolExecutionEngine
-from rest_framework import status
-from rest_framework.test import APIClient
 from uuid import uuid4
 
-from .models import Protocol, ProtocolVersion, ProtocolStep, ProtocolExecution, ProtocolExecutionState
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from rest_framework import status
+from rest_framework.test import APIClient
+
+from .models import (
+    Protocol,
+    ProtocolExecution,
+    ProtocolExecutionState,
+    ProtocolStep,
+    ProtocolVersion,
+)
+from .services import ProtocolExecutionEngine
 
 User = get_user_model()
 
@@ -110,7 +117,9 @@ class ProtocolSerializerTest(TestCase):
     def test_version_create_serializer_copies_previous_data(self):
         from .serializers import ProtocolVersionCreateSerializer
 
-        self.version.steps_data = {"steps": [{"id": "step_0", "type": "info", "title": "Step 0"}]}
+        self.version.steps_data = {
+            "steps": [{"id": "step_0", "type": "info", "title": "Step 0"}]
+        }
         self.version.protocol_type = "guiado"
         self.version.save()
 
@@ -118,7 +127,10 @@ class ProtocolSerializerTest(TestCase):
         serializer = ProtocolVersionCreateSerializer(data=data)
         self.assertTrue(serializer.is_valid(), serializer.errors)
         version = serializer.save()
-        self.assertEqual(version.steps_data, {"steps": [{"id": "step_0", "type": "info", "title": "Step 0"}]})
+        self.assertEqual(
+            version.steps_data,
+            {"steps": [{"id": "step_0", "type": "info", "title": "Step 0"}]},
+        )
 
 
 class ProtocolViewSetTest(TestCase):
@@ -505,7 +517,11 @@ class ProtocolStepModelTest(TestCase):
         self._make_step(order=3)
         self._make_step(order=1)
         self._make_step(order=2)
-        orders = list(ProtocolStep.objects.filter(version=self.version).values_list("order", flat=True))
+        orders = list(
+            ProtocolStep.objects.filter(
+                version=self.version
+            ).values_list("order", flat=True)
+        )
         self.assertEqual(orders, [1, 2, 3])
 
     def test_cascade_delete_with_version(self):
@@ -568,7 +584,12 @@ class ProtocolExecutionModelTest(TestCase):
     def test_multiple_executions_same_version(self):
         self._make_execution(patient_name="Paciente A")
         self._make_execution(patient_name="Paciente B")
-        self.assertEqual(ProtocolExecution.objects.filter(version=self.version).count(), 2)
+        self.assertEqual(
+            ProtocolExecution.objects.filter(
+                version=self.version
+            ).count(),
+            2,
+        )
 
 
 class ProtocolExecutionStateModelTest(TestCase):
@@ -1286,7 +1307,9 @@ class GuidedProtocolInterpreterTest(TestCase):
         interpreter = GuidedProtocolInterpreter(steps_data)
 
         self.assertEqual(
-            interpreter.resolve_next_step_id("step_1_gravidade", {"checked_items": ["g1"]}),
+            interpreter.resolve_next_step_id(
+                "step_1_gravidade", {"checked_items": ["g1"]}
+            ),
             "step_d_exames",
         )
         self.assertEqual(
@@ -1527,7 +1550,11 @@ class GuidedProtocolInterpreterTest(TestCase):
         from .engine.interpreter import GuidedProtocolInterpreter
 
         interpreter = GuidedProtocolInterpreter({"steps": []})
-        gate = {"expression": "peso_kg > 10", "level": "warning", "message": "Peso baixo"}
+        gate = {
+            "expression": "peso_kg > 10",
+            "level": "warning",
+            "message": "Peso baixo",
+        }
 
         result = interpreter.evaluate_gate(gate, {"peso_kg": 12})
 
@@ -1537,7 +1564,11 @@ class GuidedProtocolInterpreterTest(TestCase):
         from .engine.interpreter import GuidedProtocolInterpreter
 
         interpreter = GuidedProtocolInterpreter({"steps": []})
-        gate = {"expression": "peso_kg > 10", "level": "warning", "message": "Peso baixo"}
+        gate = {
+            "expression": "peso_kg > 10",
+            "level": "warning",
+            "message": "Peso baixo",
+        }
 
         result = interpreter.evaluate_gate(gate, {"peso_kg": 5})
 
@@ -1555,8 +1586,16 @@ class GuidedProtocolInterpreterTest(TestCase):
                     "type": "info",
                     "title": "Step com gates",
                     "gate": [
-                        {"expression": "peso_kg > 10", "level": "warning", "message": "Peso baixo"},
-                        {"expression": "peso_kg < 200", "level": "critical", "message": "Peso alto"},
+                        {
+                            "expression": "peso_kg > 10",
+                            "level": "warning",
+                            "message": "Peso baixo",
+                        },
+                        {
+                            "expression": "peso_kg < 200",
+                            "level": "critical",
+                            "message": "Peso alto",
+                        },
                     ],
                     "next_step": None,
                 },
@@ -1603,8 +1642,16 @@ class GuidedProtocolInterpreterTest(TestCase):
         from .engine.interpreter import GuidedProtocolInterpreter
 
         interpreter = GuidedProtocolInterpreter({"steps": []})
-        gate_and = {"expression": "peso_kg > 10 and peso_kg < 100", "level": "warning", "message": ""}
-        gate_or = {"expression": "peso_kg < 5 or peso_kg > 100", "level": "warning", "message": ""}
+        gate_and = {
+            "expression": "peso_kg > 10 and peso_kg < 100",
+            "level": "warning",
+            "message": "",
+        }
+        gate_or = {
+            "expression": "peso_kg < 5 or peso_kg > 100",
+            "level": "warning",
+            "message": "",
+        }
 
         # and: both true → passes
         self.assertIsNone(interpreter.evaluate_gate(gate_and, {"peso_kg": 50}))
@@ -1622,7 +1669,11 @@ class GuidedProtocolInterpreterTest(TestCase):
         gate = {"expression": "'febre' in sintomas", "level": "warning", "message": ""}
 
         # Present → passes
-        self.assertIsNone(interpreter.evaluate_gate(gate, {"sintomas": ["febre", "vomito"]}))
+        self.assertIsNone(
+            interpreter.evaluate_gate(
+                gate, {"sintomas": ["febre", "vomito"]}
+            )
+        )
         # Absent → fails
         self.assertIsNotNone(interpreter.evaluate_gate(gate, {"sintomas": ["vomito"]}))
 
@@ -1646,8 +1697,18 @@ class JsonProtocolExecutionServiceTest(TestCase):
                     "true_next": "fim_sim",
                     "false_next": "fim_nao",
                 },
-                {"id": "fim_sim", "type": "info", "title": "Fim sim", "next_step": "checklist"},
-                {"id": "fim_nao", "type": "info", "title": "Fim nao", "next_step": None},
+                {
+                    "id": "fim_sim",
+                    "type": "info",
+                    "title": "Fim sim",
+                    "next_step": "checklist",
+                },
+                {
+                    "id": "fim_nao",
+                    "type": "info",
+                    "title": "Fim nao",
+                    "next_step": None,
+                },
                 {
                     "id": "checklist",
                     "type": "checklist",
@@ -1715,7 +1776,12 @@ class JsonProtocolExecutionServiceTest(TestCase):
                     },
                     "max_reached_next": "fim_total",
                 },
-                {"id": "fim_total", "type": "info", "title": "Fim total", "next_step": None},
+                {
+                    "id": "fim_total",
+                    "type": "info",
+                    "title": "Fim total",
+                    "next_step": None,
+                },
             ]
         }
         self.version.save()

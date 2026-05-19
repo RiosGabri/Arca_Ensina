@@ -20,7 +20,9 @@ class ProtocolExecutionEngine:
             execution.save(update_fields=["current_step_key", "current_step"])
 
             entry_warnings = interpreter.evaluate_entry_gates(context or {})
-            step_warnings = interpreter.evaluate_step_gates(execution.current_step_key, context or {})
+            step_warnings = interpreter.evaluate_step_gates(
+                execution.current_step_key, context or {}
+            )
             all_warnings = entry_warnings + step_warnings
 
             ProtocolExecutionState.objects.create(
@@ -170,7 +172,10 @@ class ProtocolExecutionEngine:
                 valor = avaliar(node.operand)
                 return operador(valor)    
             
-            raise ValueError("Expressão Inválida: Use apenas números, variáveis e operações.")
+            raise ValueError(
+                "Expressão Inválida: Use apenas números,"
+                " variáveis e operações."
+            )
             
     
         tree = ast.parse(formula, mode="eval")
@@ -198,7 +203,9 @@ class ProtocolExecutionEngine:
         # Conecta com valores existentes para manter contexto
         existing_values = {}
         try:
-            existing = ProtocolExecutionState.objects.get(execution=execution, step_key=step_key)
+            existing = ProtocolExecutionState.objects.get(
+                execution=execution, step_key=step_key
+            )
             existing_values = existing.values
         except ProtocolExecutionState.DoesNotExist:
             pass
@@ -207,7 +214,9 @@ class ProtocolExecutionEngine:
         if step and step.get("type") == "derived_calc":
             history = self._historico_json(execution)
             context = interpreter.build_context(history, merged_values)
-            merged_values = interpreter.apply_derived_calculation(step_key, merged_values, context)
+            merged_values = interpreter.apply_derived_calculation(
+                step_key, merged_values, context
+            )
 
         # Avalia os gates do step antes de responder
         history = self._historico_json(execution)
@@ -278,7 +287,14 @@ class ProtocolExecutionEngine:
             execution.current_step = None
             execution.status = execution.Status.CONCLUIDO
             execution.finished_at = timezone.now()
-            execution.save(update_fields=["current_step_key", "current_step", "status", "finished_at"])
+            execution.save(
+                update_fields=[
+                    "current_step_key",
+                    "current_step",
+                    "status",
+                    "finished_at",
+                ]
+            )
         else:
             execution.current_step_key = next_step_key
             execution.current_step = None
@@ -299,7 +315,11 @@ class ProtocolExecutionEngine:
             step = interpreter.get_step(state.step_key)
             if step and step.get("type") == "wait_reassess":
                 duration = step.get("duration_hours", 0)
-                due_at = state.answered_at + timezone.timedelta(hours=duration) if duration else None
+                due_at = (
+                    state.answered_at + timezone.timedelta(hours=duration)
+                    if duration
+                    else None
+                )
 
                 status = "info"
                 if due_at:

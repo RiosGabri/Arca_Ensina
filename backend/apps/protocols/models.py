@@ -7,6 +7,7 @@ from django.db import models
 from jsonschema import ValidationError as JsonSchemaValidationError
 from jsonschema import validate
 
+
 class Protocol(models.Model):
     """Protocolo clínico base."""
 
@@ -247,7 +248,9 @@ class ProtocolExecution(models.Model):
         verbose_name="ID declarativo do passo atual",
     )
     started_at = models.DateTimeField(auto_now_add=True)
-    finished_at = models.DateTimeField(null=True, blank=True, verbose_name="Finalizado em")
+    finished_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="Finalizado em"
+    )
 
     class Meta:
         ordering = ["-started_at"]
@@ -265,8 +268,14 @@ class ProtocolExecution(models.Model):
         return f"{self.version} — {self.patient_name} ({self.get_status_display()})"
     
     def clean(self):
-        if self.version and self.version.protocol_type != ProtocolVersion.ProtocolType.GUIADO:
-            raise DjangoValidationError("Só é possível executar protocolos do tipo guiado.")
+        if (
+            self.version
+            and self.version.protocol_type
+            != ProtocolVersion.ProtocolType.GUIADO
+        ):
+            raise DjangoValidationError(
+                "Só é possível executar protocolos do tipo guiado."
+            )
 
     def save(self, *args, **kwargs):
         self.clean()
