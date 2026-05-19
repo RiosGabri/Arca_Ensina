@@ -32,8 +32,8 @@ function CalculatorForm(props: CalculatorFormProps) {
     }
 
     return (
-        <form onSubmit={props.onSubmit} className="max-w-md mx-auto p-4 bg-white rounded shadow">
-            <div className="flex flex-col gap-1">
+        <form onSubmit={props.onSubmit}>
+            <div className="flex flex-col gap-3">
                 <UnitInput
                     label="Peso"
                     value={weightValue ?? ""}
@@ -106,7 +106,7 @@ function CalculatorForm(props: CalculatorFormProps) {
                     }}
                 />
 
-                <Button type="submit">
+                <Button type="submit" variant="default" className="mt-2">
                     {props.loading ? "Calculando..." : "Calcular"}
                 </Button>
             </div>

@@ -9,7 +9,7 @@ import { BriefcaseMedical } from "lucide-react";
 
 function MedicationBadge({ name, size = 16 }: { name: string; size?: number }) {
     return (
-        <div className="bg-blue-500 text-white text-sm font-medium mr-2  rounded-full flex items-center" style={{ padding: `${size / 4}px`}}>
+        <div className="bg-arca-blue-600 text-white text-sm font-medium mr-2  rounded-full flex items-center" style={{ padding: `${size / 4}px`}}>
             {name === "pill" ? (
                 <Pill size={size} />
             ) : name === "tablets" ? (

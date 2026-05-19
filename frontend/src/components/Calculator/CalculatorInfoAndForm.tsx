@@ -21,7 +21,7 @@ function CalculatorInfoAndForm() {
     if (errorMed) return <p>{errorMed}</p>
     if (!medication) return null
     return (
-        <div className="flex flex-col gap-6 max-w-3xl mx-auto p-4">
+        <div className="flex flex-col gap-6 max-w-3xl p-4">
             <CalculatorMedicationInfo medication={medication} />
 
             <CalculatorForm
