@@ -21,9 +21,10 @@ interface PatientPillProps {
   patient: Patient;
   active?: boolean;
   onClick?: () => void;
+  size?: 'default' | 'lg';
 }
 
-export default function PatientPill({ patient, active, onClick }: PatientPillProps) {
+export default function PatientPill({ patient, active, onClick, size = 'default' }: PatientPillProps) {
   const Comp = onClick ? 'button' : 'div';
 
   return (
@@ -32,19 +33,25 @@ export default function PatientPill({ patient, active, onClick }: PatientPillPro
       onClick={onClick}
       aria-pressed={onClick ? active : undefined}
       className={cn(
-        'inline-flex min-w-36 max-w-48 flex-col items-start rounded-2xl px-3.5 py-3 transition-all',
+        'inline-flex flex-col items-start rounded-2xl transition-all',
+        size === 'default' && 'min-w-36 max-w-48 px-3.5 py-3',
+        size === 'lg' && 'min-w-44 max-w-56 px-5 py-4',
         onClick && 'cursor-pointer outline-none focus-visible:ring-3 focus-visible:ring-ring/30',
         active
           ? 'border-transparent bg-primary text-primary-foreground'
           : 'border border-border bg-background hover:bg-muted',
       )}
     >
-      <span className="flex w-full items-center gap-1.5 text-body-md font-bold truncate">
-        {active && <Check size={14} className="shrink-0" />}
+      <span className={cn(
+        'flex w-full items-center gap-1.5 font-bold truncate',
+        size === 'default' ? 'text-body-md' : 'text-body-lg',
+      )}>
+        {active && <Check size={size === 'lg' ? 16 : 14} className="shrink-0" />}
         <span className="truncate">{patient.nome}</span>
       </span>
       <span className={cn(
-        'flex items-center text-caption',
+        'flex items-center',
+        size === 'default' ? 'text-caption' : 'text-body-md',
         active ? 'text-primary-foreground/70' : 'text-muted-foreground',
       )}>
         {formatAge(patient.dataNascimento)}

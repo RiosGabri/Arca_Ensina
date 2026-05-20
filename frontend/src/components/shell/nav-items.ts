@@ -18,7 +18,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     to: "/medications",
-    label: "Medicamentos e calculadora",
+    label: "Calculadora",
     icon: Cross,
     match: (p) => p.startsWith("/medications") || p.startsWith("/calculator"),
   },

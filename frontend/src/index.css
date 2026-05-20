@@ -93,35 +93,13 @@ button[type="submit"]:disabled {
     text-decoration: underline;
 }
 
-.dashboard {
-    max-width: 50rem;
-    margin: 2.5rem auto;
-    padding: 2rem;
-    background: var(--background);
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Hide scrollbar for horizontal scroll areas */
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
-
-.dashboard h1 {
-    margin-bottom: 1rem;
-}
-
-.dashboard nav {
-    margin-bottom: 1.5rem;
-}
-
-.dashboard nav button {
-    padding: 0.5rem 1rem;
-    background: var(--destructive);
-    color: var(--primary-foreground);
-    border: none;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    font-size: 0.875rem;
-}
-
-.dashboard nav button:hover {
-    background: var(--arca-red-700);
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
 }
 
 /* ── ARCA Design Tokens ── */

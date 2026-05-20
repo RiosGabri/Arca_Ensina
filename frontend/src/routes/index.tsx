@@ -48,6 +48,13 @@ const router = createBrowserRouter([
           })),
       },
       {
+        path: "/patients/list",
+        lazy: () =>
+          import("@/pages/PatientListPage").then((m) => ({
+            Component: m.default,
+          })),
+      },
+      {
         path: "/medications",
         lazy: () =>
           import("@/features/calculator/pages/MedicationSelectPage").then(
