@@ -1,6 +1,4 @@
 export { AuthProvider, useAuth } from './AuthContext'
-export { default as LoginPage } from './pages/LoginPage'
-export { default as RegisterPage } from './pages/RegisterPage'
 export { loginSchema, registerSchema } from './schemas'
 export type { LoginInput, RegisterInput } from './schemas'
 export type { Profile, User, AuthTokens, RegisterResponse, ApiErrorResponse } from './types'
