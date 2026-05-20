@@ -16,4 +16,19 @@ else:
     print('Fixtures already present, skipping.')
 "
 
+echo "Checking sintomas..."
+python manage.py shell -c "
+from apps.pacientes.models import Sintoma
+if Sintoma.objects.count() == 0:
+    from django.core.management import call_command
+    call_command('loaddata', 'apps/pacientes/fixtures/sintomas.json')
+    print('Sintomas loaded.')
+else:
+    print('Sintomas already present, skipping.')
+"
+
+echo "Loading medications..."
+python manage.py loaddata apps/medications/infos/medications.json
+echo "Medications loaded."
+
 exec "$@"

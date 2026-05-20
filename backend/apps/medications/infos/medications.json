@@ -4,7 +4,7 @@
         "pk": 1,
         "fields": {
             "name": "Amoxicilina",
-            "type": "Antibiótico",
+            "category": "Antibiótico",
             "description": "Antibiótico de amplo espectro indicado para infecções bacterianas como otite, pneumonia e infecções do trato urinário em crianças.",
             "prescription": 50,
             "frequency_hours": 8,
@@ -42,7 +42,7 @@
         "pk": 2,
         "fields": {
             "name": "Morfina",
-            "type": "Analgésico Opioide",
+            "category": "Analgésico Opioide",
             "description": "Indicado para dor moderada a intensa em pediatria. Requer monitoramento rigoroso por risco de depressão respiratória.",
             "prescription": 50,
             "frequency_hours": 4,
@@ -80,7 +80,7 @@
         "pk": 3,
         "fields": {
             "name": "Diazepam",
-            "type": "Sedativo",
+            "category": "Sedativo",
             "description": "Benzodiazepínico indicado para crises convulsivas agudas e ansiedade em crianças. Administrado com cautela por risco de depressão respiratória.",
             "prescription": 50,
             "frequency_hours": 8,
@@ -118,7 +118,7 @@
         "pk": 4,
         "fields": {
             "name": "Dipirona",
-            "type": "Analgésico",
+            "category": "Analgésico",
             "description": "Analgésico e antipirético não opioide indicado para dor e febre em pediatria. Atua inibindo a síntese de prostaglandinas de forma central e periférica.",
             "prescription": 50,
             "frequency_hours": 8,
@@ -152,7 +152,7 @@
         "pk": 5,
         "fields": {
             "name": "Midazolam",
-            "type": "Sedativo",
+            "category": "Sedativo",
             "description": "Benzodiazepínico de curta ação, o mais utilizado para sedação em pediatria. Indicado para procedimentos e controle de convulsões. Não possui efeito analgésico.",
             "prescription": 50,
             "frequency_hours": 8,
@@ -190,7 +190,7 @@
         "pk": 6,
         "fields": {
             "name": "Fentanil",
-            "type": "Anestésico e analgésico",
+            "category": "Anestésico e analgésico",
             "description": "Anestésico e analgésico utilizado em pediatria para procedimentos cirúrgicos e controle de dor. Requer monitoramento rigoroso por risco de depressão respiratória.",
             "prescription": 50,
             "frequency_hours": 8,
@@ -228,7 +228,7 @@
         "pk": 7,
         "fields": {
             "name": "Clonidina",
-            "type": "Sedativo ou analgésico",
+            "category": "Sedativo ou analgésico",
             "description": "Agonista alfa-2 adrenérgico com propriedades sedativas e analgésicas leves. Usado como adjuvante na sedação pediátrica e no controle da hipertensão.",
             "prescription": 50,
             "frequency_hours": 6,
@@ -266,7 +266,7 @@
         "pk": 7,
         "fields": {
             "name": "Paracetamol",
-            "type": " Analgésico",
+            "category": " Analgésico",
             "description": "Analgésico e antipirético não opioide amplamente utilizado em pediatria para dor leve a moderada e febre. Boa tolerabilidade e perfil de segurança.",
             "prescription": 50,
             "frequency_hours": 8,
