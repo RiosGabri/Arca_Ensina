@@ -1,9 +1,8 @@
-import { Check, UserPlus } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { usePatients, type Patient } from '@/features/patient'
+import { usePatients, PatientPill, type Patient } from '@/features/patient'
 
 interface PatientSelectorProps {
   selectedId: string | null
@@ -18,7 +17,7 @@ function PatientSelector({ selectedId, onSelect }: PatientSelectorProps) {
     return (
       <div className="flex flex-wrap gap-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-9 w-32 rounded-3xl" />
+          <Skeleton key={i} className="h-14 w-36 rounded-2xl" />
         ))}
       </div>
     )
@@ -53,28 +52,14 @@ function PatientSelector({ selectedId, onSelect }: PatientSelectorProps) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      {patients.map((patient) => {
-        const active = patient.id === selectedId
-        return (
-          <button
-            key={patient.id}
-            type="button"
-            onClick={() => onSelect(patient)}
-            aria-pressed={active}
-            className={cn(
-              'inline-flex min-h-9 items-center gap-1.5 rounded-3xl border px-3 py-1.5',
-              'text-body-md font-medium transition-all outline-none',
-              'focus-visible:ring-3 focus-visible:ring-ring/30',
-              active
-                ? 'border-transparent bg-primary text-primary-foreground'
-                : 'border-border bg-card text-foreground hover:bg-muted',
-            )}
-          >
-            {active && <Check size={14} />}
-            {patient.nome}
-          </button>
-        )
-      })}
+      {patients.map((patient) => (
+        <PatientPill
+          key={patient.id}
+          patient={patient}
+          active={patient.id === selectedId}
+          onClick={() => onSelect(patient)}
+        />
+      ))}
     </div>
   )
 }
