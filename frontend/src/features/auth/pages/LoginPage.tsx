@@ -43,9 +43,9 @@ export default function LoginPage() {
     <div className="flex min-h-dvh flex-col md:flex-row">
       {/* ── Mobile top banner ── */}
       <div className="relative h-40 overflow-hidden bg-[#0c54b2] md:hidden">
-        <div className="absolute left-[35%] top-1/2 -translate-y-1/2 h-[250%] aspect-square rounded-full bg-[#0a4a9e]" />
-        <div className="absolute left-[28%] top-1/2 -translate-y-1/2 h-[190%] aspect-square rounded-full bg-[#0e3f88]" />
-        <div className="absolute left-[20%] top-1/2 -translate-y-1/2 h-[130%] aspect-square rounded-full bg-[#0b3572]" />
+        <div className="absolute -left-20 -top-10 h-72 w-72 rounded-full bg-[#0a4a9e]" />
+        <div className="absolute -left-18 -top-4 h-56 w-56 rounded-full bg-[#0e3f88]" />
+        <div className="absolute -left-14 top-2 h-42 w-42 rounded-full bg-[#0b3572]" />
         <span className="absolute left-6 top-1/2 -translate-y-1/2 z-10 text-[2.25rem] font-extrabold tracking-wide text-white">
           ARCA
         </span>
@@ -53,9 +53,9 @@ export default function LoginPage() {
 
       {/* ── Left brand panel (desktop) ── */}
       <div className="relative hidden w-[42%] overflow-hidden bg-[#0c54b2] md:block">
-        <div className="absolute left-[65%] top-1/2 -translate-y-1/2 h-[130%] aspect-square rounded-full bg-[#0a4a9e]" />
-        <div className="absolute left-[55%] top-1/2 -translate-y-1/2 h-full aspect-square rounded-full bg-[#0e3f88]" />
-        <div className="absolute left-[43%] top-1/2 -translate-y-1/2 h-[70%] aspect-square rounded-full bg-[#0b3572]" />
+        <div className="absolute right-[35%] top-1/2 -translate-y-1/2 h-[130%] aspect-square rounded-full bg-[#0a4a9e]" />
+        <div className="absolute right-[45%] top-1/2 -translate-y-1/2 h-full aspect-square rounded-full bg-[#0e3f88]" />
+        <div className="absolute right-[57%] top-1/2 -translate-y-1/2 h-[70%] aspect-square rounded-full bg-[#0b3572]" />
         <span className="absolute left-10 top-1/2 -translate-y-1/2 z-10 text-[4rem] font-extrabold tracking-wide text-white">
           ARCA
         </span>
