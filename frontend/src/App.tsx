@@ -4,8 +4,7 @@ import { useAuth } from "./context/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import DesignSystem from "./pages/DesignSystem";
 import { PatientCreatePage } from "./features/patient";
-import MedicationsList from "./components/Medications/MedicationsList"; //for now (fazer a pagina ainda)
-import Calculator from "./pages/Calculator";
+import { CalculatorPage, MedicationSelectPage } from "./features/calculator";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { Toaster } from "@/components/ui/sonner";
@@ -57,7 +56,7 @@ export default function App() {
           path="/calculator/calculate/:medicationId"
           element={
             <ProtectedRoute>
-              <Calculator />
+              <CalculatorPage />
             </ProtectedRoute>
           }
         />
@@ -65,7 +64,7 @@ export default function App() {
           path="/medications"
           element={
             <ProtectedRoute>
-              <MedicationsList />
+              <MedicationSelectPage />
             </ProtectedRoute>
           }
         />
