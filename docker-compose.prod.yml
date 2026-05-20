@@ -1,0 +1,50 @@
+# Producao — usa imagens pre-construidas do GHCR (nao monta codigo-fonte).
+# Subir com:  docker compose -f docker-compose.prod.yml --env-file .env up -d
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: ghcr.io/${GHCR_OWNER}/arca-ensina-backend:latest
+    restart: unless-stopped
+    entrypoint: ["sh", "entrypoint.sh"]
+    command:
+      - gunicorn
+      - project.wsgi:application
+      - --bind=0.0.0.0:8000
+      - --workers=2
+    env_file: .env
+    environment:
+      - USE_POSTGRES=true
+      - POSTGRES_HOST=db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: ghcr.io/${GHCR_OWNER}/arca-ensina-frontend:latest
+    restart: unless-stopped
+    environment:
+      - DOMAIN=${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

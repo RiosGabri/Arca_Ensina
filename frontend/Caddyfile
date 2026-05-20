@@ -1,0 +1,19 @@
+# Caddy serve o SPA e faz proxy reverso para o backend Django.
+# HTTPS automatico via Let's Encrypt (precisa do dominio apontando para o droplet).
+# DOMAIN vem do ambiente (docker-compose.prod.yml -> .env).
+{$DOMAIN} {
+	encode gzip zstd
+
+	# Rotas servidas pelo Django (API, admin, static, schema/docs)
+	@backend path /api/* /admin/* /static/* /schema/* /docs/*
+	handle @backend {
+		reverse_proxy backend:8000
+	}
+
+	# Tudo o mais e o SPA — fallback para index.html (client-side routing)
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

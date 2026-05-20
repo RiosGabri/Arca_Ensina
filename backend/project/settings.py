@@ -60,6 +60,17 @@ ALLOWED_HOSTS = [
     ".vercel.app",
 ]
 
+# Hosts adicionais via env (producao): DJANGO_ALLOWED_HOSTS=dominio.com,www.dominio.com
+_extra_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
+ALLOWED_HOSTS += [h.strip() for h in _extra_hosts.split(",") if h.strip()]
+
+# Origens confiaveis para CSRF (producao): CSRF_TRUSTED_ORIGINS=https://dominio.com
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
+
 
 # Application definition
 
@@ -90,6 +101,7 @@ if DEBUG:
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -177,6 +189,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Custom user model
 AUTH_USER_MODEL = "accounts.User"
@@ -219,6 +239,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+
+# Em producao o frontend e servido pelo mesmo dominio (Caddy faz proxy de /api),
+# entao nao ha requisicao cross-origin. Endurece a seguranca quando DEBUG=false.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
 
 AUDIT_LOG_RETENTION_DAYS = 90
 

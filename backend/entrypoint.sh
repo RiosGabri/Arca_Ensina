@@ -31,4 +31,7 @@ echo "Loading medications..."
 python manage.py loaddata apps/medications/infos/medications.json
 echo "Medications loaded."
 
+echo "Collecting static files..."
+python manage.py collectstatic --noinput
+
 exec "$@"
