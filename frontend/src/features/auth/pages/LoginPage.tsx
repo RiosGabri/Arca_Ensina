@@ -21,13 +21,13 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { email: '', password: '' },
   })
 
   const onSubmit = async (data: LoginInput) => {
     setServerError('')
     try {
-      await login(data.username, data.password)
+      await login(data.email, data.password)
       navigate('/dashboard')
     } catch (err) {
       let detail = 'Credenciais inválidas. Tente novamente.'
@@ -65,7 +65,7 @@ export default function LoginPage() {
       <div className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-12 md:px-16">
         <div className="w-full max-w-sm">
           <h1 className="mb-8 text-center text-heading-lg font-bold text-neutral-800 md:text-display-sm md:text-neutral-600">
-            Usuário
+            Entrar
           </h1>
 
           {serverError && (
@@ -78,9 +78,9 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {/* Email / Username */}
+            {/* Email */}
             <div className="space-y-1.5">
-              <label htmlFor="username" className="sr-only">
+              <label htmlFor="email" className="sr-only">
                 Email
               </label>
               <div className="relative">
@@ -89,18 +89,18 @@ export default function LoginPage() {
                   aria-hidden="true"
                 />
                 <Input
-                  id="username"
-                  type="text"
+                  id="email"
+                  type="email"
                   placeholder="Email"
                   className="h-12 pl-11 text-base"
-                  {...register('username')}
-                  autoComplete="username"
-                  aria-invalid={!!errors.username}
+                  {...register('email')}
+                  autoComplete="email"
+                  aria-invalid={!!errors.email}
                 />
               </div>
-              {errors.username && (
+              {errors.email && (
                 <p className="pl-4 text-caption text-destructive">
-                  {errors.username.message}
+                  {errors.email.message}
                 </p>
               )}
             </div>

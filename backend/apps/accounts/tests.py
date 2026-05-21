@@ -1,70 +1,108 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework.test import APIClient
 
-from .models import User
+from .models import Invitation, User
 from .permissions import IsDoctor
+
+
+class InvitationCheckTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.invitation = Invitation.objects.create(
+            email="convidado@example.com", profile="medico"
+        )
+
+    def test_valid_invitation_returns_email_and_profile(self):
+        resp = self.client.get(f"/api/v1/auth/invite/{self.invitation.token}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data["email"], "convidado@example.com")
+        self.assertEqual(resp.data["profile"], "medico")
+
+    def test_unknown_token_returns_404(self):
+        resp = self.client.get("/api/v1/auth/invite/inexistente/")
+        self.assertEqual(resp.status_code, 404)
+
+    def test_expired_invitation_returns_400(self):
+        self.invitation.expires_at = timezone.now() - timedelta(days=1)
+        self.invitation.save()
+        resp = self.client.get(f"/api/v1/auth/invite/{self.invitation.token}/")
+        self.assertEqual(resp.status_code, 400)
+
+    def test_used_invitation_returns_400(self):
+        self.invitation.accepted_at = timezone.now()
+        self.invitation.save()
+        resp = self.client.get(f"/api/v1/auth/invite/{self.invitation.token}/")
+        self.assertEqual(resp.status_code, 400)
 
 
 class RegisterTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.url = "/api/v1/auth/register/"
-
-    def test_register_blocks_admin_profile(self):
-        resp = self.client.post(
-            self.url,
-            {
-                "username": "adminuser",
-                "email": "admin@example.com",
-                "password": "strongpass123",
-                "profile": "admin",
-            },
+        self.invitation = Invitation.objects.create(
+            email="novo@example.com", profile="pesquisador"
         )
-        self.assertEqual(resp.status_code, 400)
 
-    def test_register_blocks_pesquisador_profile(self):
-        resp = self.client.post(
-            self.url,
-            {
-                "username": "researcher",
-                "email": "researcher@example.com",
-                "password": "strongpass123",
-                "profile": "pesquisador",
-            },
-        )
-        self.assertEqual(resp.status_code, 400)
+    def _payload(self, **overrides):
+        data = {
+            "token": self.invitation.token,
+            "first_name": "Ana",
+            "last_name": "Silva",
+            "gender": "feminino",
+            "birth_date": "1990-05-20",
+            "password": "strongpass123",
+        }
+        data.update(overrides)
+        return data
 
-    def test_register_allows_medico_profile(self):
-        resp = self.client.post(
-            self.url,
-            {
-                "username": "doctor1",
-                "email": "doctor1@example.com",
-                "password": "strongpass123",
-                "profile": "medico",
-            },
-        )
+    def test_register_with_valid_invitation(self):
+        resp = self.client.post(self.url, self._payload())
         self.assertEqual(resp.status_code, 201)
         self.assertIn("access", resp.data)
         self.assertIn("refresh", resp.data)
+        user = User.objects.get(email="novo@example.com")
+        # E-mail e perfil vêm do convite, não do payload.
+        self.assertEqual(user.profile, "pesquisador")
+        self.assertEqual(user.first_name, "Ana")
+        self.assertEqual(user.gender, "feminino")
 
-    def test_email_uniqueness(self):
-        User.objects.create_user(
-            username="existing",
-            email="dup@example.com",
-            password="strongpass123",
-        )
+    def test_register_marks_invitation_as_used(self):
+        self.client.post(self.url, self._payload())
+        self.invitation.refresh_from_db()
+        self.assertTrue(self.invitation.is_used)
+
+    def test_register_without_token_fails(self):
+        resp = self.client.post(self.url, self._payload(token=""))
+        self.assertEqual(resp.status_code, 400)
+
+    def test_register_with_invalid_token_fails(self):
+        resp = self.client.post(self.url, self._payload(token="naoexiste"))
+        self.assertEqual(resp.status_code, 400)
+
+    def test_register_rejects_reused_invitation(self):
+        self.client.post(self.url, self._payload())
+        resp = self.client.post(self.url, self._payload())
+        self.assertEqual(resp.status_code, 400)
+
+    def test_register_rejects_expired_invitation(self):
+        self.invitation.expires_at = timezone.now() - timedelta(days=1)
+        self.invitation.save()
+        resp = self.client.post(self.url, self._payload())
+        self.assertEqual(resp.status_code, 400)
+
+    def test_register_ignores_payload_email_and_profile(self):
         resp = self.client.post(
             self.url,
-            {
-                "username": "newuser",
-                "email": "dup@example.com",
-                "password": "strongpass123",
-                "profile": "medico",
-            },
+            self._payload(email="hacker@example.com", profile="admin"),
         )
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 201)
+        user = User.objects.get(email="novo@example.com")
+        self.assertEqual(user.profile, "pesquisador")
+        self.assertFalse(User.objects.filter(email="hacker@example.com").exists())
 
 
 class PermissionTests(TestCase):
@@ -79,7 +117,6 @@ class AuthEndpointTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username="testlogin",
             email="testlogin@example.com",
             password="strongpass123",
             profile="medico",
@@ -92,7 +129,7 @@ class AuthEndpointTests(TestCase):
     def test_login_returns_tokens(self):
         resp = self.client.post(
             "/api/v1/auth/login/",
-            {"username": "testlogin", "password": "strongpass123"},
+            {"email": "testlogin@example.com", "password": "strongpass123"},
         )
         self.assertEqual(resp.status_code, 200)
         self.assertIn("access", resp.data)
@@ -101,7 +138,7 @@ class AuthEndpointTests(TestCase):
     def test_logout_blacklists_refresh_token(self):
         login_resp = self.client.post(
             "/api/v1/auth/login/",
-            {"username": "testlogin", "password": "strongpass123"},
+            {"email": "testlogin@example.com", "password": "strongpass123"},
         )
         refresh = login_resp.data["refresh"]
         access = login_resp.data["access"]
@@ -115,7 +152,6 @@ class AuthEndpointTests(TestCase):
 
     def test_logout_rejects_other_users_token(self):
         other = User.objects.create_user(
-            username="otheruser",
             email="other@example.com",
             password="strongpass123",
             profile="medico",
@@ -126,7 +162,7 @@ class AuthEndpointTests(TestCase):
 
         login_resp = self.client.post(
             "/api/v1/auth/login/",
-            {"username": "testlogin", "password": "strongpass123"},
+            {"email": "testlogin@example.com", "password": "strongpass123"},
         )
         self.client.credentials(
             HTTP_AUTHORIZATION=f"Bearer {login_resp.data['access']}"
@@ -142,7 +178,7 @@ class AuthEndpointTests(TestCase):
     def test_logout_without_refresh_returns_400(self):
         login_resp = self.client.post(
             "/api/v1/auth/login/",
-            {"username": "testlogin", "password": "strongpass123"},
+            {"email": "testlogin@example.com", "password": "strongpass123"},
         )
         self.client.credentials(
             HTTP_AUTHORIZATION=f"Bearer {login_resp.data['access']}"
@@ -153,12 +189,12 @@ class AuthEndpointTests(TestCase):
     def test_user_me_returns_authenticated_user(self):
         login_resp = self.client.post(
             "/api/v1/auth/login/",
-            {"username": "testlogin", "password": "strongpass123"},
+            {"email": "testlogin@example.com", "password": "strongpass123"},
         )
         self.client.credentials(
             HTTP_AUTHORIZATION=f"Bearer {login_resp.data['access']}"
         )
         resp = self.client.get("/api/v1/auth/user/")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data["username"], "testlogin")
+        self.assertEqual(resp.data["email"], "testlogin@example.com")
         self.assertEqual(resp.data["profile"], "medico")

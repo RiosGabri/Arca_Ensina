@@ -83,9 +83,9 @@ const router = createBrowserRouter([
       })),
   },
   {
-    path: "/register",
+    path: "/invite/:token",
     lazy: () =>
-      import("@/features/auth/pages/RegisterPage").then((m) => ({
+      import("@/features/auth/pages/InvitePage").then((m) => ({
         Component: m.default,
       })),
   },

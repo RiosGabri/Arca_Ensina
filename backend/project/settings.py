@@ -253,6 +253,9 @@ if not DEBUG:
 
 AUDIT_LOG_RETENTION_DAYS = 90
 
+# URL base do frontend — usada para montar o link de convite no Django admin.
+SITE_URL = os.environ.get("SITE_URL", "http://localhost:5173")
+
 # Cache
 CACHES = {
     "default": {

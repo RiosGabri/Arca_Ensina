@@ -137,19 +137,16 @@ class ProtocolViewSetTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.admin = User.objects.create_user(
-            username="admin",
             email="admin@test.com",
             password="testpass123",
             profile="admin",
         )
         self.doctor = User.objects.create_user(
-            username="doctor",
             email="doctor@test.com",
             password="testpass123",
             profile="medico",
         )
         self.researcher = User.objects.create_user(
-            username="researcher",
             email="researcher@test.com",
             password="testpass123",
             profile="pesquisador",
@@ -229,13 +226,11 @@ class ProtocolVersionViewSetTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.admin = User.objects.create_user(
-            username="admin2",
             email="admin2@test.com",
             password="testpass123",
             profile="admin",
         )
         self.doctor = User.objects.create_user(
-            username="doctor2",
             email="doctor2@test.com",
             password="testpass123",
             profile="medico",
@@ -539,7 +534,6 @@ class ProtocolExecutionModelTest(TestCase):
         self.protocol = Protocol.objects.create(title="Protocolo Execution Test")
         self.version = self.protocol.versions.first()
         self.physician = User.objects.create_user(
-            username="medico_exec",
             email="medico_exec@test.com",
             password="testpass123",
             profile="medico",
@@ -598,7 +592,6 @@ class ProtocolExecutionStateModelTest(TestCase):
         self.protocol = Protocol.objects.create(title="Protocolo State Test")
         self.version = self.protocol.versions.first()
         self.physician = User.objects.create_user(
-            username="medico_state",
             email="medico_state@test.com",
             password="testpass123",
             profile="medico",
@@ -683,7 +676,6 @@ class EngineTest(TestCase):
         self.versao = self.protocolo.versions.first()
 
         self.medico = User.objects.create_user(
-            username="medic_o",
             email="medico@gmail.com",
             password="testpass123",
             profile="medico",
@@ -1754,7 +1746,6 @@ class JsonProtocolExecutionServiceTest(TestCase):
         }
         self.version.save()
         self.physician = User.objects.create_user(
-            username="json_doctor",
             email="json_doctor@test.com",
             password="testpass123",
             profile="medico",
@@ -1987,7 +1978,6 @@ class JsonProtocolExecutionApiTest(TestCase):
         }
         self.version.save()
         self.doctor = User.objects.create_user(
-            username="json_api_doctor",
             email="json_api_doctor@test.com",
             password="testpass123",
             profile="medico",
@@ -2074,7 +2064,6 @@ class ProtocolExecuteApiTest(TestCase):
         self.version.steps_data = self.steps_data
         self.version.save()
         self.doctor = User.objects.create_user(
-            username="exec_doctor",
             email="exec_doctor@test.com",
             password="testpass123",
             profile="medico",

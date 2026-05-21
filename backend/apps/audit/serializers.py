@@ -4,14 +4,14 @@ from .models import AuditLog
 
 
 class AuditLogSerializer(serializers.ModelSerializer):
-    user_username = serializers.CharField(source="user.username", read_only=True)
+    user_email = serializers.CharField(source="user.email", read_only=True)
 
     class Meta:
         model = AuditLog
         fields = [
             "id",
             "user",
-            "user_username",
+            "user_email",
             "action",
             "resource_type",
             "resource_id",

@@ -27,7 +27,6 @@ class AuditLogModelTests(TestCase):
 class AuditableMixinTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username="audittest",
             email="audit@example.com",
             password="strongpass123",
             profile="medico",
@@ -72,19 +71,16 @@ class AuditEndpointTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.admin = User.objects.create_user(
-            username="adminuser",
             email="admin@example.com",
             password="strongpass123",
             profile="admin",
         )
         self.doctor = User.objects.create_user(
-            username="docuser",
             email="doc@example.com",
             password="strongpass123",
             profile="medico",
         )
         self.researcher = User.objects.create_user(
-            username="researchuser",
             email="research@example.com",
             password="strongpass123",
             profile="pesquisador",
@@ -109,7 +105,7 @@ class AuditEndpointTests(TestCase):
     def _login(self, user):
         resp = self.client.post(
             "/api/v1/auth/login/",
-            {"username": user.username, "password": "strongpass123"},
+            {"email": user.email, "password": "strongpass123"},
         )
         return resp.data["access"]
 

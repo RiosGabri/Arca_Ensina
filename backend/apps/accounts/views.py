@@ -1,15 +1,43 @@
 from rest_framework import status
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import (
+    NotFound,
+    PermissionDenied,
+    ValidationError,
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RegisterSerializer, UserSerializer
+from .models import Invitation
+from .serializers import (
+    InvitationCheckSerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
+
+
+class InvitationCheckView(APIView):
+    """Valida um token de convite e devolve e-mail + perfil associados."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, token, **kwargs):
+        try:
+            invitation = Invitation.objects.get(token=token)
+        except Invitation.DoesNotExist:
+            raise NotFound("Convite não encontrado.")
+        if invitation.is_used:
+            raise ValidationError("Este convite já foi utilizado.")
+        if invitation.is_expired:
+            raise ValidationError("Este convite expirou.")
+        return Response(InvitationCheckSerializer(invitation).data)
 
 
 class RegisterView(APIView):
+    """Cadastro só é possível com um token de convite válido."""
+
     permission_classes = [AllowAny]
 
     def post(self, request, **kwargs):
@@ -22,7 +50,6 @@ class RegisterView(APIView):
         return Response(
             {
                 "id": user.id,
-                "username": user.username,
                 "email": user.email,
                 "profile": user.profile,
                 "access": str(refresh.access_token),

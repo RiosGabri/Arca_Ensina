@@ -37,9 +37,11 @@ function getGreeting(): string {
   return 'Boa Noite'
 }
 
-function getDisplayName(user: { first_name: string; last_name: string; username: string; profile: string }): string {
-  const firstName = user.first_name || user.username
-  if (user.profile === 'medico') return `Dr. ${firstName}`
+function getDisplayName(user: { first_name: string; last_name: string; gender: string; email: string; profile: string }): string {
+  const firstName = user.first_name || user.email
+  if (user.profile === 'medico') {
+    return user.gender === 'feminino' ? `Dra. ${firstName}` : `Dr. ${firstName}`
+  }
   return firstName
 }
 

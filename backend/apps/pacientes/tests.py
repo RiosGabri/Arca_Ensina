@@ -28,7 +28,7 @@ class PacienteLogicTest(TestCase):
 class PacienteAPITest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username="testerios", password="password123"
+            email="testerios@test.com", password="password123"
         )
         self.client.force_authenticate(user=self.user)
 

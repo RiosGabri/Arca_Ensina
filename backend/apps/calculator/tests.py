@@ -97,7 +97,6 @@ class CalculatorViewTests(TestCase):
 
         # usuário médico
         self.user = User.objects.create_user(
-            username="doctor_test",
             email="doctor@test.com",
             password="strongpass123",
             profile="medico",
@@ -106,7 +105,7 @@ class CalculatorViewTests(TestCase):
         # autentica
         login = self.client.post(
             "/api/v1/auth/login/",
-            {"username": "doctor_test", "password": "strongpass123"},
+            {"email": "doctor@test.com", "password": "strongpass123"},
         )
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
 

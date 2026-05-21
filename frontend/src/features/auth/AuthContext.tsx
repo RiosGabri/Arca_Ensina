@@ -7,19 +7,15 @@ import {
   type ReactNode,
 } from 'react'
 import api from '@/lib/api/client'
-import type { AuthTokens, Profile, RegisterResponse, User } from './types'
+import type { RegisterInput } from './schemas'
+import type { AuthTokens, RegisterResponse, User } from './types'
 
 interface AuthContextValue {
   user: User | null
   loading: boolean
   isAuthenticated: boolean
-  login: (username: string, password: string) => Promise<AuthTokens>
-  register: (
-    username: string,
-    email: string,
-    password: string,
-    profile: Profile,
-  ) => Promise<RegisterResponse>
+  login: (email: string, password: string) => Promise<AuthTokens>
+  register: (token: string, data: RegisterInput) => Promise<RegisterResponse>
   logout: () => Promise<void>
 }
 
@@ -53,8 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void fetchUser()
   }, [fetchUser])
 
-  const login = async (username: string, password: string): Promise<AuthTokens> => {
-    const { data } = await api.post<AuthTokens>('auth/login/', { username, password })
+  const login = async (email: string, password: string): Promise<AuthTokens> => {
+    const { data } = await api.post<AuthTokens>('auth/login/', { email, password })
     localStorage.setItem('access_token', data.access)
     localStorage.setItem('refresh_token', data.refresh)
     try {
@@ -67,20 +63,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const register = async (
-    username: string,
-    email: string,
-    password: string,
-    profile: Profile,
+    token: string,
+    data: RegisterInput,
   ): Promise<RegisterResponse> => {
-    const { data } = await api.post<RegisterResponse>('auth/register/', {
-      username,
-      email,
-      password,
-      profile,
+    const { data: result } = await api.post<RegisterResponse>('auth/register/', {
+      token,
+      ...data,
     })
-    if (data.access && data.refresh) {
-      localStorage.setItem('access_token', data.access)
-      localStorage.setItem('refresh_token', data.refresh)
+    if (result.access && result.refresh) {
+      localStorage.setItem('access_token', result.access)
+      localStorage.setItem('refresh_token', result.refresh)
       try {
         const { data: userData } = await api.get<User>('auth/user/')
         setUser(userData)
@@ -88,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Same fallback as login: registration succeeded but profile fetch failed.
       }
     }
-    return data
+    return result
   }
 
   const logout = async (): Promise<void> => {
