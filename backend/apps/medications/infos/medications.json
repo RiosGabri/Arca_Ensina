@@ -263,7 +263,7 @@
     },
     {
         "model": "medications.medication",
-        "pk": 7,
+        "pk": 8,
         "fields": {
             "name": "Paracetamol",
             "category": " Analgésico",
@@ -295,6 +295,120 @@
                     "min": 10.0,
                     "max": 15.0,
                     "absolute_max": 60.0
+                }
+            }
+        }
+    },
+    {
+        "model": "medications.medication",
+        "pk": 9,
+        "fields": {
+            "name": "Dexmedetomidina",
+            "category": "Sedativo",
+            "description": "Agonista alfa-2 adrenérgico altamente seletivo indicado para sedação em ambiente de terapia intensiva. Oferece sedação com menor risco de depressão respiratória.",
+            "prescription": 50,
+            "frequency_hours": 1,
+            "min_dose_mg_kg": 0.2,
+            "max_dose_mg_kg": 1.5,
+            "max_absolute_dose_mg": 2.0,
+            "concentration_mg": 200,
+            "concentration_ml": 2,
+            "limits_by_age": {
+                "neonatal": {
+                    "min": 0.2,
+                    "max": 1.0,
+                    "absolute_max": 1.0
+                },
+                "lactente": {
+                    "min": 0.2,
+                    "max": 1.5,
+                    "absolute_max": 2.0
+                },
+                "crianca": {
+                    "min": 0.2,
+                    "max": 1.5,
+                    "absolute_max": 2.0
+                },
+                "adolescente": {
+                    "min": 0.2,
+                    "max": 1.5,
+                    "absolute_max": 2.0
+                }
+            }
+        }
+    },
+    {
+        "model": "medications.medication",
+        "pk": 10,
+        "fields": {
+            "name": "Metadona",
+            "category": "Analgésico Opioide",
+            "description": "Opioide sintético de longa ação indicado para o manejo de dor severa e transição/desmame de opioides contínuos na prevenção de abstinência.",
+            "prescription": 50,
+            "frequency_hours": 6,
+            "min_dose_mg_kg": 0.05,
+            "max_dose_mg_kg": 0.2,
+            "max_absolute_dose_mg": 10.0,
+            "concentration_mg": 10,
+            "concentration_ml": 1,
+            "limits_by_age": {
+                "neonatal": {
+                    "min": 0.05,
+                    "max": 0.1,
+                    "absolute_max": 2.0
+                },
+                "lactente": {
+                    "min": 0.05,
+                    "max": 0.2,
+                    "absolute_max": 5.0
+                },
+                "crianca": {
+                    "min": 0.05,
+                    "max": 0.2,
+                    "absolute_max": 10.0
+                },
+                "adolescente": {
+                    "min": 0.05,
+                    "max": 0.2,
+                    "absolute_max": 10.0
+                }
+            }
+        }
+    },
+    {
+        "model": "medications.medication",
+        "pk": 11,
+        "fields": {
+            "name": "Lorazepam",
+            "category": "Sedativo",
+            "description": "Benzodiazepínico de ação intermediária utilizado para sedação contínua ou controle de ansiedade em UTI pediátrica. Requer cautela e monitoramento por risco de tolerância.",
+            "prescription": 50,
+            "frequency_hours": 6,
+            "min_dose_mg_kg": 0.04,
+            "max_dose_mg_kg": 0.1,
+            "max_absolute_dose_mg": 4.0,
+            "concentration_mg": 2,
+            "concentration_ml": 1,
+            "limits_by_age": {
+                "neonatal": {
+                    "min": 0.04,
+                    "max": 0.05,
+                    "absolute_max": 1.0
+                },
+                "lactente": {
+                    "min": 0.04,
+                    "max": 0.1,
+                    "absolute_max": 2.0
+                },
+                "crianca": {
+                    "min": 0.04,
+                    "max": 0.1,
+                    "absolute_max": 4.0
+                },
+                "adolescente": {
+                    "min": 0.04,
+                    "max": 0.1,
+                    "absolute_max": 4.0
                 }
             }
         }
