@@ -54,9 +54,12 @@ class PacienteAdmin(admin.ModelAdmin):
         "cidade",
         "telefone",
         "nome_responsavel",
+        "created_by",
     )
 
     def save_model(self, request, obj, form, change):
+        if not change and not obj.created_by_id:
+            obj.created_by = request.user
         super().save_model(request, obj, form, change)
 
         alergias_texto = form.cleaned_data.get("alergias_input")

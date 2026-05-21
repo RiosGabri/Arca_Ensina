@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 
@@ -43,6 +44,14 @@ class Paciente(models.Model):
     nome_responsavel = models.CharField(max_length=255, blank=True, null=True)
     cidade = models.CharField(max_length=100)
     alergias = models.ManyToManyField(Alergia, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pacientes",
+        verbose_name="Cadastrado por",
+    )
 
     class Meta:
         ordering = ["id"]
